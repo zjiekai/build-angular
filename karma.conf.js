@@ -1,6 +1,6 @@
 module.exports = function(config) {
   config.set({
-    frameworks: ['jasmine', 'browserify'],
+    frameworks: ['browserify', 'jasmine'],
     files: [
       'src/**/*.js',
       'test/**/*_spec.js'
@@ -9,6 +9,9 @@ module.exports = function(config) {
       'src/**/*.js': ['jshint', 'browserify'],
       'test/**/*.js': ['jshint', 'browserify']
     },
-    browsers: ['Chrome']
+    browsers: ['Chrome'],
+    browserify: {
+      debug: true
+    }
   });
 };
