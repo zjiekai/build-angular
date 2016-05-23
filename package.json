@@ -1,0 +1,38 @@
+{
+  "name": "myangular",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "karma start",
+    "lint": "jshint src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjiekai/build-angular.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zjiekai/build-angular/issues"
+  },
+  "homepage": "https://github.com/zjiekai/build-angular#readme",
+  "devDependencies": {
+    "browserify": "^13.0.1",
+    "install": "^0.8.1",
+    "jasmine-core": "^2.4.1",
+    "jshint": "^2.9.2",
+    "karma": "^0.13.22",
+    "karma-browserify": "^5.0.5",
+    "karma-chrome-launcher": "^1.0.1",
+    "karma-jasmine": "^1.0.2",
+    "sinon": "^1.17.4",
+    "watchify": "^3.7.0"
+  },
+  "dependencies": {
+    "jquery": "^2.2.4",
+    "lodash": "^4.13.0"
+  }
+}
