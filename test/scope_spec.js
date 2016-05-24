@@ -86,10 +86,39 @@ describe('Scope', function() {
 
     it('may have watchers that omit the listener function', function() {
       var watchFn = jasmine.createSpy();
+      scope.$watch(watchFn);
 
       scope.$digest();
 
       expect(watchFn).toHaveBeenCalled();
+    });
+
+    it('triggers chained watchers in the same digest', function() {
+      scope.name = 'Jane';
+
+      scope.$watch(
+        function(scope) { return scope.nameUpper; },
+        function(newValue, oldValue, scope) {
+          if (newValue) {
+            scope.initial = newValue.substring(0, 1) + '.';
+          }
+        }
+      );
+
+      scope.$watch(
+        function(scope) { return scope.name; },
+        function(newValue, oldValue, scope) {
+          if (newValue) {
+          }
+        }
+      );
+
+      scope.$digest();
+      expect(scope.initial).toBe('J.');
+
+      scope.name = 'Bob';
+      scope.$digest();
+      expect(scope.initial).toBe('B.');
     });
 
   });
