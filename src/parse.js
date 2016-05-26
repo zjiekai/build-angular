@@ -10,6 +10,42 @@ function Lexer() {
 }
 
 Lexer.prototype.lex = function(text) {
+  this.text = text;
+  this.index = 0;
+  this.ch = undefined;
+  this.tokens = [];
+
+  while (this.index < this.text.length) {
+    this.ch = this.text.charAt(this.index);
+    if (this.isNumber(this.ch)) {
+      this.readNumber();
+    } else {
+      throw 'Unexpected next character: ' + this.ch;
+    }
+  }
+
+  return this.tokens;
+};
+
+Lexer.prototype.isNumber = function(ch) {
+  return '0' <= ch && ch <= '9';
+};
+
+Lexer.prototype.readNumber = function() {
+  var number = '';
+  while (this.index < this.text.length) {
+    var ch = this.text.charAt(this.index);
+    if (this.isNumber(ch)) {
+      number += ch;
+    } else {
+      break;
+    }
+    this.index++;
+  }
+  this.tokens.push({
+    text: number,
+    value: Number(number)
+  });
 };
 
 function AST(lexer) {
@@ -36,6 +72,6 @@ function Parser(lexer) {
 
 Parser.prototype.parse = function(text) {
   return this.astCompiler.compile(text);
-}
+};
 
 module.exports = parse;
