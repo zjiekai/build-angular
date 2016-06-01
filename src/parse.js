@@ -58,18 +58,32 @@ Lexer.prototype.readNumber = function() {
   });
 };
 
+var ESCAPES = {'n': '\n', 'f': '\f', 'r': '\r', 't': '\t',
+               'v': '\v', "'": '\'', '"': '"'};
+
 Lexer.prototype.readString = function(quote) {
   this.index++;
   var string = '';
+  var escape = false;
   while (this.index < this.text.length) {
     var ch = this.text.charAt(this.index);
-    if (ch === quote) {
+    if (escape) {
+      var replacement = ESCAPES[ch];
+      if (replacement) {
+        string += replacement;
+      } else {
+        string += ch;
+      }
+      escape = false;
+    } else if (ch === quote) {
       this.index++;
       this.tokens.push({
         text: string,
         value: string
       });
       return;
+    } else if (ch === '\\') {
+      escape = true;
     } else {
       string += ch;
     }
@@ -122,10 +136,18 @@ ASTCompiler.prototype.recurse = function(ast) {
 
 ASTCompiler.prototype.escape = function(value) {
   if (_.isString(value)) {
-    return '\'' + value + '\'';
+    return '\'' + 
+      value.replace(this.stringEscapeRegex, this.stringEscapeFn) + 
+      '\'';
   } else {
     return value;
   }
+};
+
+ASTCompiler.prototype.stringEscapeRegex = /[^ a-zA-Z0-9]/g;
+
+ASTCompiler.prototype.stringEscapeFn = function(c) {
+  return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4);
 };
 
 function Parser(lexer) {
