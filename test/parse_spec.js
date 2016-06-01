@@ -29,4 +29,8 @@ describe('parse', function() {
     var fn = parse('"abc"');
     expect(fn()).toEqual('abc');
   });
+
+  it('will not parse a string with mismatching quotes', function() {
+    expect(function() { parse('"abc\''); }).toThrow();
+  });
 });
