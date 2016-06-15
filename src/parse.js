@@ -22,9 +22,9 @@ Lexer.prototype.lex = function(text) {
     if (this.isNumber(this.ch) || 
         (this.ch === '.' && this.isNumber(this.peek()))) {
       this.readNumber();
-    } else if (this.ch === '\'' || this.ch === '"') {
+    } else if (this.is('\'"')) {
       this.readString(this.ch);
-    } else if (this.ch === '[' || this.ch === ']' || this.ch === ',') {
+    } else if (this.is('[],{}:')) {
       this.tokens.push({
         text: this.ch
       });
@@ -39,6 +39,10 @@ Lexer.prototype.lex = function(text) {
   }
 
   return this.tokens;
+};
+
+Lexer.prototype.is = function(chs) {
+  return chs.indexOf(this.ch) >= 0;
 };
 
 Lexer.prototype.peek = function() {
@@ -139,6 +143,7 @@ function AST(lexer) {
 AST.Program = 'Program';
 AST.Literal = 'Literal';
 AST.ArrayExpression = 'ArrayExpression';
+AST.ObjectExpression = 'ObjectExpression';
 
 AST.prototype.constants = {
   'null': {type: AST.Literal, value: null},
@@ -158,6 +163,8 @@ AST.prototype.program = function() {
 AST.prototype.primary = function() {
   if (this.expect('[')) {
     return this.arrayDeclaration();
+  } else if (this.expect('{')) {
+    return this.object();
   } else if (this.constants.hasOwnProperty(this.tokens[0].text)) {
     return this.constants[this.consume().text];
   } else {
@@ -170,6 +177,11 @@ AST.prototype.expect = function(e) {
   if (token) {
     return this.tokens.shift();
   }
+};
+
+AST.prototype.object = function() {
+  this.consume('}');
+  return {type: AST.ObjectExpression};
 };
 
 AST.prototype.arrayDeclaration = function() {
@@ -227,6 +239,8 @@ ASTCompiler.prototype.recurse = function(ast) {
       break;
     case AST.Literal:
       return this.escape(ast.value);
+    case AST.ObjectExpression:
+      return '{}';
     case AST.ArrayExpression:
       var elements = _.map(ast.elements, _.bind(function(element) {
         return this.recurse(element);
