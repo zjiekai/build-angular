@@ -250,10 +250,14 @@ function ASTCompiler(astBuilder) {
 
 ASTCompiler.prototype.compile = function(text) {
   var ast = this.astBuilder.ast(text);
-  this.state = {body: [], nextId: 0};
+  this.state = {body: [], nextId: 0, vars: []};
   this.recurse(ast);
   /* jshint -W054 */
-  return new Function('s', this.state.body.join(''));
+  return new Function('s',
+    (this.state.vars.length ?
+      'var ' + this.state.vars.join(',') + ';' :
+      ''
+    ) + this.state.body.join(''));
   /* jshint +W054 */
 };
 
@@ -267,6 +271,7 @@ ASTCompiler.prototype.assign = function(id, value) {
 
 ASTCompiler.prototype.nextId = function() {
   var id = 'v' + (this.state.nextId++);
+  this.state.vars.push(id);
   return id;
 };
 
@@ -297,7 +302,6 @@ ASTCompiler.prototype.recurse = function(ast) {
       return '[' + elements.join(',') + ']';
     case AST.Identifier:
       var intoId = this.nextId();
-      this.state.body.push('var ', intoId, ';');
       this.if_('s', this.assign(intoId, this.nonComputedMember('s', ast.name)));
       return 'v0';
   }
