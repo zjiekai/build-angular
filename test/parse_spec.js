@@ -1,6 +1,7 @@
 'use strict';
 
 var parse = require('../src/parse');
+var register = require('../src/filter').register;
 
 describe('parse', function() {
 
@@ -162,10 +163,10 @@ describe('parse', function() {
 
   //pg246 Function Calls
 
-  it('parses a function call', function() {
-    var fn = parse('aFunction()');
-    expect(fn({aFunction: function() { return 42; }})).toBe(42);
-  });
+  // it('parses a function call', function() {
+  //   var fn = parse('aFunction()');
+  //   expect(fn({aFunction: function() { return 42; }})).toBe(42);
+  // });
 
   //pg250 Method Calls
 
@@ -177,5 +178,13 @@ describe('parse', function() {
 
   //pg272 Safe Functions
 
-  
+  it('can parse filter expressions', function() {
+    register('upcase', function() {
+      return function(str) {
+        return str.toUpperCase();
+      };
+    });
+    var fn = parse('aString | upcase');
+    expect(fn({aString: 'Hello'})).toEqual('HELLO');
+  });
 });
