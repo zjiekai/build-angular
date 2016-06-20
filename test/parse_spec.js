@@ -157,4 +157,25 @@ describe('parse', function() {
     var locals = {aKey: {}};
     expect(fn(scope, locals)).toBeUndefined();
   });
+
+  //pg241 Computed Attribute Lookup
+
+  //pg246 Function Calls
+
+  it('parses a function call', function() {
+    var fn = parse('aFunction()');
+    expect(fn({aFunction: function() { return 42; }})).toBe(42);
+  });
+
+  //pg250 Method Calls
+
+  //pg254 Assigning Values
+
+  //pg260 Safety In Member Access
+
+  //pg265 Safe Objects
+
+  //pg272 Safe Functions
+
+  
 });
