@@ -171,6 +171,13 @@ describe('parse', function() {
 
   //pg254 Assigning Values
 
+  it('parses a simple attribute assignment', function() {
+    var fn = parse('anAttribute = 42');
+    var scope = {anAttribute:41};
+    fn(scope);
+    expect(scope.anAttribute).toBe(42);
+  });
+
   //pg260 Safety In Member Access
 
   //pg265 Safe Objects

@@ -24,7 +24,7 @@ Lexer.prototype.lex = function(text) {
       this.readNumber();
     } else if (this.is('\'"')) {
       this.readString(this.ch);
-    } else if (this.is('[],{}:.')) {
+    } else if (this.is('[],{}:.=')) {
       this.tokens.push({
         text: this.ch
       });
@@ -151,6 +151,7 @@ AST.Property = 'Property';
 AST.Identifier = 'Identifier';
 AST.ThisExpression = 'ThisExpression';
 AST.MemberExpression = 'MemberExpression';
+AST.AssignmentExpression = 'AssignmentExpression';
 
 AST.prototype.constants = {
   'null': {type: AST.Literal, value: null},
@@ -164,8 +165,17 @@ AST.prototype.ast = function(text) {
   return this.program();
 };
 
+AST.prototype.assignment = function() {
+  var left = this.primary();
+  if (this.expect('=')) {
+    var right = this.primary();
+    return {type: AST.AssignmentExpression, left: left, right: right};
+  }
+  return left;
+};
+
 AST.prototype.program = function() {
-  return {type: AST.Program, body: this.primary()};
+  return {type: AST.Program, body: this.assignment()};
 };
 
 AST.prototype.primary = function() {
@@ -341,6 +351,11 @@ ASTCompiler.prototype.recurse = function(ast, context) {
       this.if_(left,
         this.assign(intoId, this.nonComputedMember(left, ast.property.name)));
       return intoId;
+    case AST.AssignmentExpression:
+      var leftContext = {};
+      this.recurse(ast.left, leftContext);
+      var leftExpr = this.nonComputedMember(leftContext.context, leftContext.name);
+      return this.assign(leftExpr, this.recurse(ast.right));
   }
 };
 
