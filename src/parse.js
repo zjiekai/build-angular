@@ -151,6 +151,7 @@ AST.Property = 'Property';
 AST.Identifier = 'Identifier';
 AST.ThisExpression = 'ThisExpression';
 AST.MemberExpression = 'MemberExpression';
+AST.CallExpression = 'CallExpression';
 AST.AssignmentExpression = 'AssignmentExpression';
 
 AST.prototype.constants = {
@@ -193,7 +194,7 @@ AST.prototype.primary = function() {
   }
 
   var next;
-  while ((next = this.expect('.', '['))) {
+  while ((next = this.expect('.', '[', '('))) {
     if (next.text === '[') {
       primary = {
         type: AST.MemberExpression,
@@ -202,13 +203,16 @@ AST.prototype.primary = function() {
         computed: true
       };
       this.consume(']');
-    } else {
+    } else if (next.text === '.') {
       primary = {
         type: AST.MemberExpression,
         object: primary,
         property: this.identifier(),
         computed: false
       };
+    } else if (next.text === '(') {
+      primary = {type: AST.CallExpression, callee: primary};
+      this.consume(')');
     }
   }
   return primary;
@@ -380,6 +384,9 @@ ASTCompiler.prototype.recurse = function(ast, context) {
       this.recurse(ast.left, leftContext);
       var leftExpr = this.nonComputedMember(leftContext.context, leftContext.name);
       return this.assign(leftExpr, this.recurse(ast.right));
+    case AST.CallExpression:
+      var callee = this.recurse(ast.callee);
+      return callee + '&&' + callee + '()';
   }
 };
 
