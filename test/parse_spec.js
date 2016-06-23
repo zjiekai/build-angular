@@ -1,6 +1,7 @@
 'use strict';
 
 var parse = require('../src/parse');
+var _ = require('lodash');
 
 describe('parse', function() {
 
@@ -159,6 +160,11 @@ describe('parse', function() {
   });
 
   //pg241 Computed Attribute Lookup
+
+  it('parses a simple computed property access', function() {
+    var fn = parse('aKey["anotherKey"]');
+    expect(fn({aKey: {anotherKey: 42}})).toBe(42);
+  });
 
   //pg246 Function Calls
 
