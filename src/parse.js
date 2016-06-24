@@ -370,19 +370,35 @@ ASTCompiler.prototype.recurse = function(ast, context) {
     case AST.MemberExpression:
       intoId = this.nextId();
       var left = this.recurse(ast.object);
+      if (context) {
+        context.context = left;
+      }
       if (ast.computed) {
         var right = this.recurse(ast.property);
         this.if_(left,
           this.assign(intoId, this.computedMember(left, right)));
+        if (context) {
+          context.name = right;
+          context.computed = true;
+        }
       } else {
         this.if_(left,
           this.assign(intoId, this.nonComputedMember(left, ast.property.name)));
+        if (context) {
+          context.name = ast.property.name;
+          context.computed = false;
+        }
       }
       return intoId;
     case AST.AssignmentExpression:
       var leftContext = {};
       this.recurse(ast.left, leftContext);
-      var leftExpr = this.nonComputedMember(leftContext.context, leftContext.name);
+      var leftExpr;
+      if (leftContext.computed) {
+        leftExpr = this.computedMember(leftContext.context, leftContext.name);
+      } else {
+        leftExpr = this.nonComputedMember(leftContext.context, leftContext.name);
+      }
       return this.assign(leftExpr, this.recurse(ast.right));
     case AST.CallExpression:
       var callee = this.recurse(ast.callee);
