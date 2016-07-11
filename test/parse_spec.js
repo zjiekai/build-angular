@@ -2,6 +2,7 @@
 
 var parse = require('../src/parse');
 var register = require('../src/filter').register;
+var _ = require('lodash');
 
 describe('parse', function() {
 
@@ -161,16 +162,57 @@ describe('parse', function() {
 
   //pg241 Computed Attribute Lookup
 
+  it('parses a simple computed property access', function() {
+    var fn = parse('aKey["anotherKey"]');
+    expect(fn({aKey: {anotherKey: 42}})).toBe(42);
+  });
+
   //pg246 Function Calls
 
-  // it('parses a function call', function() {
-  //   var fn = parse('aFunction()');
-  //   expect(fn({aFunction: function() { return 42; }})).toBe(42);
-  // });
+  it('parses a function call', function() {
+    var fn = parse('aFunction()');
+    expect(fn({aFunction: function() { return 42; }})).toBe(42);
+  });
 
   //pg250 Method Calls
 
   //pg254 Assigning Values
+
+  it('parses a simple attribute assignment', function() {
+    var fn = parse('anAttribute = 42');
+    var scope = {anAttribute:41};
+    fn(scope);
+    expect(scope.anAttribute).toBe(42);
+  });
+
+  it('can assign any primary expression', function() {
+    var fn = parse('anAttribute = aFunction()');
+    var scope = {aFunction: _.constant(42)};
+    fn(scope);
+    expect(scope.anAttribute).toBe(42);
+  });
+
+  it('can assign a computed object property', function() {
+    var fn = parse('anObject["anAttribute"] = 42');
+    var scope = {anObject: {}};
+    fn(scope);
+    expect(scope.anObject.anAttribute).toBe(42);
+  });
+
+  it('can assign a non-computed object property', function() {
+    var fn = parse('anObject.anAttribute = 42');
+    var scope = {anObject: {}};
+    fn(scope);
+    expect(scope.anObject.anAttribute).toBe(42);
+  });
+
+  it('can assign a nested object property', function() {
+    var fn = parse('anArray[0].anAttribute = 42');
+    var scope = {anArray: [{}]};
+    fn(scope);
+    expect(scope.anArray[0].anAttribute).toBe(42);
+  });
+
 
   //pg260 Safety In Member Access
 

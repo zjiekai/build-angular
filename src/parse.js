@@ -24,7 +24,7 @@ Lexer.prototype.lex = function(text) {
       this.readNumber();
     } else if (this.is('\'"')) {
       this.readString(this.ch);
-    } else if (this.is('[],{}:.')) {
+    } else if (this.is('[],{}:.()=')) {
       this.tokens.push({
         text: this.ch
       });
@@ -151,6 +151,8 @@ AST.Property = 'Property';
 AST.Identifier = 'Identifier';
 AST.ThisExpression = 'ThisExpression';
 AST.MemberExpression = 'MemberExpression';
+AST.CallExpression = 'CallExpression';
+AST.AssignmentExpression = 'AssignmentExpression';
 
 AST.prototype.constants = {
   'null': {type: AST.Literal, value: null},
@@ -164,8 +166,17 @@ AST.prototype.ast = function(text) {
   return this.program();
 };
 
+AST.prototype.assignment = function() {
+  var left = this.primary();
+  if (this.expect('=')) {
+    var right = this.primary();
+    return {type: AST.AssignmentExpression, left: left, right: right};
+  }
+  return left;
+};
+
 AST.prototype.program = function() {
-  return {type: AST.Program, body: this.primary()};
+  return {type: AST.Program, body: this.assignment()};
 };
 
 AST.prototype.primary = function() {
@@ -181,18 +192,34 @@ AST.prototype.primary = function() {
   } else {
     primary = this.constant();
   }
-  while (this.expect('.')) {
-    primary = {
-      type: AST.MemberExpression,
-      object: primary,
-      property: this.identifier()
-    };
+
+  var next;
+  while ((next = this.expect('.', '[', '('))) {
+    if (next.text === '[') {
+      primary = {
+        type: AST.MemberExpression,
+        object: primary,
+        property: this.primary(),
+        computed: true
+      };
+      this.consume(']');
+    } else if (next.text === '.') {
+      primary = {
+        type: AST.MemberExpression,
+        object: primary,
+        property: this.identifier(),
+        computed: false
+      };
+    } else if (next.text === '(') {
+      primary = {type: AST.CallExpression, callee: primary};
+      this.consume(')');
+    }
   }
   return primary;
 };
 
-AST.prototype.expect = function(e) {
-  var token = this.peek(e);
+AST.prototype.expect = function(e1, e2, e3, e4) {
+  var token = this.peek(e1, e2, e3, e4);
   if (token) {
     return this.tokens.shift();
   }
@@ -235,10 +262,11 @@ AST.prototype.arrayDeclaration = function() {
   return {type: AST.ArrayExpression, elements: elements};
 };
 
-AST.prototype.peek = function(e) {
+AST.prototype.peek = function(e1, e2, e3, e4) {
   if (this.tokens.length > 0) {
     var text = this.tokens[0].text;
-    if (text === e || !e) {
+    if (text === e1 || text === e2 || text === e3 || text === e4 ||
+      (!e1 && !e2 && !e3 && !e4)) {
       return this.tokens[0];
     }
   }
@@ -299,7 +327,11 @@ ASTCompiler.prototype.nonComputedMember = function(left, right) {
   return '(' + left + ').' + right;
 };
 
-ASTCompiler.prototype.recurse = function(ast) {
+ASTCompiler.prototype.computedMember = function(left, right) {
+  return '(' + left + ')[' + right + ']';
+};
+
+ASTCompiler.prototype.recurse = function(ast, context) {
   var intoId;
   switch (ast.type) {
     case AST.Program:
@@ -327,15 +359,50 @@ ASTCompiler.prototype.recurse = function(ast) {
         this.assign(intoId, this.nonComputedMember('l', ast.name)));
       this.if_(this.not(this.getHasOwnProperty('l', ast.name)) + ' && s',
         this.assign(intoId, this.nonComputedMember('s', ast.name)));
+      if (context) {
+        context.context = this.getHasOwnProperty('l', ast.name) + '?l:s';
+        context.name = ast.name;
+        context.computed = false;
+      }
       return intoId;
     case AST.ThisExpression:
       return 's';
     case AST.MemberExpression:
       intoId = this.nextId();
       var left = this.recurse(ast.object);
-      this.if_(left,
-        this.assign(intoId, this.nonComputedMember(left, ast.property.name)));
+      if (context) {
+        context.context = left;
+      }
+      if (ast.computed) {
+        var right = this.recurse(ast.property);
+        this.if_(left,
+          this.assign(intoId, this.computedMember(left, right)));
+        if (context) {
+          context.name = right;
+          context.computed = true;
+        }
+      } else {
+        this.if_(left,
+          this.assign(intoId, this.nonComputedMember(left, ast.property.name)));
+        if (context) {
+          context.name = ast.property.name;
+          context.computed = false;
+        }
+      }
       return intoId;
+    case AST.AssignmentExpression:
+      var leftContext = {};
+      this.recurse(ast.left, leftContext);
+      var leftExpr;
+      if (leftContext.computed) {
+        leftExpr = this.computedMember(leftContext.context, leftContext.name);
+      } else {
+        leftExpr = this.nonComputedMember(leftContext.context, leftContext.name);
+      }
+      return this.assign(leftExpr, this.recurse(ast.right));
+    case AST.CallExpression:
+      var callee = this.recurse(ast.callee);
+      return callee + '&&' + callee + '()';
   }
 };
 
