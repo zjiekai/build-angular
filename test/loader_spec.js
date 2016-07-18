@@ -52,4 +52,12 @@ describe('modules', function() {
         var myModule = window.angular.module('myModule', ['myOtherModule']);
         expect(myModule.requires).toEqual(['myOtherModule']);
     });
+
+    it('allows getting a module', function() {
+        var myModule = window.angular.module('myModule', []);
+        var gotModule = window.angular.module('myModule');
+
+        expect(gotModule).toBeDefined();
+        expect(gotModule).toBe(myModule);
+    });
 });
