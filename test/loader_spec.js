@@ -33,6 +33,7 @@ describe('setupModuleLoader', function() {
 describe('modules', function() {
 
     beforeEach(function() {
+        delete window.angular;
         setupModuleLoader(window);
     });
 
@@ -59,5 +60,11 @@ describe('modules', function() {
 
         expect(gotModule).toBeDefined();
         expect(gotModule).toBe(myModule);
+    });
+
+    it('throws when trying to get a nonexistent module', function() {
+        expect(function() {
+            window.angular.module('myModule');
+        }).toThrow();
     });
 });

@@ -23,7 +23,11 @@ function setupModuleLoader(window) {
     };
 
     var getModule = function(name, modules) {
-        return modules[name];
+        if (modules.hasOwnProperty(name)) {
+            return modules[name];
+        } else {
+            throw 'Module '+name+' is not available!';
+        }
     };
 
     ensure(angular, 'module', function() {
