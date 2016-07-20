@@ -38,6 +38,40 @@ describe('injector', function() {
         var injector = createInjector(['myModule']);
         expect(injector.has('aConstant')).toBe(false);
     });
+    
+    it('can return a registered constant', function() {
+        var module = window.angular.module('myModule', []);
+        module.constant('aConstant', 42);
+        var injector = createInjector(['myModule']);
+        expect(injector.get('aConstant')).toBe(42);
+    });
+
+    // pg413 Requiring Other Modules
+    it('loads multiple modules', function() {
+        var module1 = window.angular.module('myModule', []);
+        var module2 = window.angular.module('myOtherModule', []);
+
+        module1.constant('aConstant', 42);
+        module2.constant('anotherConstant', 43);
+
+        var injector = createInjector(['myModule', 'myOtherModule']);
+
+        expect(injector.has('aConstant')).toBe(true);
+        expect(injector.has('anotherConstant')).toBe(true);
+    });
+    
+    it('loads the required modules of a module', function() {
+        var module1 = window.angular.module('myModule', []);
+        var module2 = window.angular.module('myOtherModule', ['myModule']);
+
+        module1.constant('aConstant', 42);
+        module2.constant('anotherConstant', 43);
+
+        var injector = createInjector(['myOtherModule']);
+
+        expect(injector.has('aConstant')).toBe(true);
+        expect(injector.has('anotherConstant')).toBe(true);
+    });
 
     // pg419
     it('overrides dependencies with locals when invoking', function() {
