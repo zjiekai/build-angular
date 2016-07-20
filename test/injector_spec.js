@@ -73,6 +73,14 @@ describe('injector', function() {
         expect(injector.has('anotherConstant')).toBe(true);
     });
 
+    // pg414
+    it('loads each module only once', function() {
+        window.angular.module('myModule', ['myOtherModule']);
+        window.angular.module('myOtherModule', ['myModule']);
+
+        createInjector(['myModule']);
+    });
+
     // pg419
     it('overrides dependencies with locals when invoking', function() {
         
