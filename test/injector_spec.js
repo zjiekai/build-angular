@@ -124,7 +124,15 @@ describe('injector', function() {
     // pg419
     // locals: $scope $element $attrs in directive controllers
     it('overrides dependencies with locals when invoking', function() {
-        
+        var module = window.angular.module('myModule', []);
+        module.constant('a', 1);
+        module.constant('b', 2);
+        var injector = createInjector(['myModule']);
+
+        var fn = function(one, two) { return one + two; };
+        fn.$inject = ['a', 'b'];
+
+        expect(injector.invoke(fn, undefined, {b: 3})).toBe(4);
     });
 
 
