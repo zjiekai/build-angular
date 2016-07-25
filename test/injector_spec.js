@@ -139,7 +139,7 @@ describe('injector', function() {
     describe('annotate', function() {
 
         it('returns the $inject annotation of a function when it has one', function() {
-            var injector = createInjector();
+            var injector = createInjector([]);
 
             var fn = function() {};
             fn.$inject = ['a', 'b'];
@@ -151,6 +151,16 @@ describe('injector', function() {
             var injector = createInjector([]);
             var fn = ['a', 'b', function() {}];
             expect(injector.annotate(fn)).toEqual(['a', 'b']);
+        });
+
+        it('throws when using a non-annotated fn in strict mode', function() {
+            var injector = createInjector([], true);
+
+            var fn = function(a, b, c) { };
+
+            expect(function() {
+                injector.annotate(fn);
+            }).toThrow();
         });
     });
 

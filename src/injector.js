@@ -2,9 +2,10 @@
 
 var _ = require('lodash');
 
-function createInjector(modulesToLoad) {
+function createInjector(modulesToLoad, strictDi) {
     var cache = {};
     var loadedModules = {};
+    strictDi = (strictDi === true);
 
     var $provide = {
         constant: function(key, value) {
@@ -15,8 +16,12 @@ function createInjector(modulesToLoad) {
     function annotate(fn) {
         if (_.isArray(fn)) {
             return fn.slice(0, fn.length-1);
-        } else {
+        } else if (fn.$inject) {
             return fn.$inject;
+        } else {
+            if (strictDi) {
+                throw 'fn is not using explicit annotation';
+            }
         }
     }
 
