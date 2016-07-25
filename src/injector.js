@@ -12,6 +12,10 @@ function createInjector(modulesToLoad) {
         }
     };
 
+    function annotate(fn) {
+        return fn.$inject;
+    }
+
     function invoke(fn, self, locals) {
         var args = _.map(fn.$inject, function(token) {
             if (_.isString(token)) {
@@ -45,6 +49,8 @@ function createInjector(modulesToLoad) {
         get: function(key) {
             return cache[key];
         },
+
+        annotate: annotate,
 
         invoke: invoke
     };
