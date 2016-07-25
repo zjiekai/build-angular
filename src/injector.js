@@ -10,6 +10,9 @@ function createInjector(modulesToLoad, strictDi) {
     var $provide = {
         constant: function(key, value) {
             cache[key] = value;
+        },
+        provider: function(key, provider) {
+            cache[key] = provider.$get();
         }
     };
 

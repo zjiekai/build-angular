@@ -164,4 +164,22 @@ describe('injector', function() {
         });
     });
 
+    //pg430 instantiate
+
+    //pg436
+    // Providers are objects that know how to make dependencies.
+
+    it('allows registering a provider and uses its $get', function() {
+        var module = window.angular.module('myModule', []);
+        module.provider('a', {
+            $get: function() {
+                return 42;
+            }
+        });
+
+        var injector = createInjector(['myModule']);
+
+        expect(injector.has('a')).toBe(true);
+        expect(injector.get('a')).toBe(42);
+    });
 });
