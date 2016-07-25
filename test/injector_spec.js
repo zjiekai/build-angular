@@ -146,6 +146,12 @@ describe('injector', function() {
 
             expect(injector.annotate(fn)).toEqual(['a', 'b']);
         });
+
+        it('returns the array-style annotations of a function', function() {
+            var injector = createInjector([]);
+            var fn = ['a', 'b', function() {}];
+            expect(injector.annotate(fn)).toEqual(['a', 'b']);
+        });
     });
 
 });

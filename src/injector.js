@@ -13,7 +13,11 @@ function createInjector(modulesToLoad) {
     };
 
     function annotate(fn) {
-        return fn.$inject;
+        if (_.isArray(fn)) {
+            return fn.slice(0, fn.length-1);
+        } else {
+            return fn.$inject;
+        }
     }
 
     function invoke(fn, self, locals) {
