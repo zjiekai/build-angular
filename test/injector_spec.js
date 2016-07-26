@@ -162,6 +162,19 @@ describe('injector', function() {
                 injector.annotate(fn);
             }).toThrow();
         });
+
+        it('invokes an array-annotated function with DI', function() {
+            var module = window.angular.module('myModule', []);
+            module.constant('a', 1);
+            module.constant('b', 2);
+            var injector = createInjector(['myModule']);
+
+            var fn = ['a', 'b', function(one, two) {
+                return one + two;
+            }];
+
+            expect(injector.invoke(fn)).toBe(3);
+        });
     });
 
     //pg430 instantiate
@@ -181,5 +194,20 @@ describe('injector', function() {
 
         expect(injector.has('a')).toBe(true);
         expect(injector.get('a')).toBe(42);
+    });
+
+    //pg438
+    xit('injects the $get method of a provider', function() {
+        var module = window.angular.module('myModule', []);
+        module.constant('a', 1);
+        module.provider('b', {
+            $get: ['a', function(a) {
+                return a + 2;
+            }]
+        });
+
+        var injector = createInjector(['myModule']);
+
+        expect(injector.get('b')).toBe(3);
     });
 });
