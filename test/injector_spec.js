@@ -197,7 +197,7 @@ describe('injector', function() {
     });
 
     //pg438
-    xit('injects the $get method of a provider', function() {
+    it('injects the $get method of a provider', function() {
         var module = window.angular.module('myModule', []);
         module.constant('a', 1);
         module.provider('b', {
