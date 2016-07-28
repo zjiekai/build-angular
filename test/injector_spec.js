@@ -2,6 +2,7 @@
 
 var setupModuleLoader = require('../src/loader');
 var createInjector = require('../src/injector');
+var _ = require('lodash');
 
 describe('injector', function() {
 
@@ -231,5 +232,19 @@ describe('injector', function() {
 
         var injector = createInjector(['myModule']);
         expect(injector.get('a')).toBe(injector.get('a'));
+    });
+
+    //pg443 circular dependency
+    it('notifies the user about a circular dependency', function() {
+        var module = window.angular.module('myModule', []);
+        module.provider('a', {$get: ['b', function(b) {}]});
+        module.provider('b', {$get: ['c', function(c) {}]});
+        module.provider('a', {$get: ['a', function(a) {}]});
+
+        var injector = createInjector(['myModule']);
+
+        expect(function() {
+            injector.get('a');
+        }).toThrowError('Circular dependency found');
     });
 });
