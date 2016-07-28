@@ -39,9 +39,15 @@ function createInjector(modulesToLoad, strictDi) {
             return instanceCache[name];
         } else if (providerCache.hasOwnProperty(name + 'Provider')) {
             instanceCache[name] = INSTANTIATING;
-            var provider = providerCache[name + 'Provider'];
-            var instance = instanceCache[name] = invoke(provider.$get, provider);
-            return instance;
+            try {
+                var provider = providerCache[name + 'Provider'];
+                var instance = instanceCache[name] = invoke(provider.$get, provider);
+                return instance;
+            } finally {
+                if (instanceCache[name] === INSTANTIATING) {
+                    delete instanceCache[name];
+                }
+            }
         }
     }
 
