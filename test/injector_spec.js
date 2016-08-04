@@ -179,6 +179,31 @@ describe('injector', function() {
     });
 
     //pg430 instantiate
+    
+    it('instantiates an annotated constructor function', function() {
+        var module = window.angular.module('myModule', []);
+        module.constant('a', 1);
+        module.constant('b', 2);
+        var injector = createInjector(['myModule']);
+
+        function Type(one, two) {
+            this.result = one + two;
+        }
+
+        Type.$inject = ['a', 'b'];
+
+        var instance = injector.instantiate(Type);
+        expect(instance.result).toBe(3);
+    });
+
+    //pg433
+    it('uses the prototype of the constructor when instantiating', function() {
+
+    });
+
+    it('supports locals when instantiating', function() {
+
+    });
 
     //pg436
     // Providers are objects that know how to make dependencies.
@@ -228,7 +253,7 @@ describe('injector', function() {
     //pg442
     it('instantiates a dependency only once', function() {
         var module = window.angular.module('myModule', []);
-        module.provider('a', {$get: function() {return {}; }});
+        module.provider('a', {$get: [function() {return {}; }]});
 
         var injector = createInjector(['myModule']);
         expect(injector.get('a')).toBe(injector.get('a'));
@@ -262,5 +287,31 @@ describe('injector', function() {
         expect(function() {
             injector.get('a');
         }).toThrow('Failing instantiation');
-    })
+    });
+
+    //pg447 Provider Constructors
+    it('instantiates a provider if given as a constructor function', function() {
+        var module = window.angular.module('myModule', []);
+
+        module.provider('a', [function AProvider() {
+            this.$get = [function() { return 42; }];
+        }]);
+
+        var injector = createInjector(['myModule']);
+
+        expect(injector.get('a')).toBe(42);
+    });
+
+
+    it('injects the given provider constructor function', function() {
+        var module = window.angular.module('myModule', []);
+
+        module.constant('b', 2);
+        module.provider('a', ['b', function AProvider(b) {
+            this.$get = function() { return 1 + b; };
+        }]);
+
+        var injector = createInjector(['myModule']);
+        expect(injector.get('a')).toBe(3);
+    });
 });

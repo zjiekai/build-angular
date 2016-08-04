@@ -15,6 +15,9 @@ function createInjector(modulesToLoad, strictDi) {
             instanceCache[key] = value;
         },
         provider: function(key, provider) {
+            if (_.isArray(provider)) {
+                provider = instantiate(provider);
+            }
             providerCache[key + 'Provider'] = provider;
         }
     };
@@ -67,6 +70,13 @@ function createInjector(modulesToLoad, strictDi) {
         return fn.apply(self, args);
     }
 
+    function instantiate(Type) {
+        var instance = {};
+        invoke(Type, instance);
+        return instance;
+
+    }
+
     _.forEach(modulesToLoad, function loadModule(moduleName) {
         if (!loadedModules.hasOwnProperty(moduleName)) {
             loadedModules[moduleName] = true;
@@ -90,7 +100,9 @@ function createInjector(modulesToLoad, strictDi) {
 
         annotate: annotate,
 
-        invoke: invoke
+        invoke: invoke,
+
+        instantiate: instantiate
     };
 }
 
