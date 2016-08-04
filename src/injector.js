@@ -40,6 +40,8 @@ function createInjector(modulesToLoad, strictDi) {
                 throw new Error('Circular dependency found');
             }
             return instanceCache[name];
+        } else if (providerCache.hasOwnProperty(name)) {
+            return providerCache[name];
         } else if (providerCache.hasOwnProperty(name + 'Provider')) {
             instanceCache[name] = INSTANTIATING;
             try {
