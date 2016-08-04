@@ -270,7 +270,7 @@ describe('injector', function() {
 
         expect(function() {
             injector.get('a');
-        }).toThrowError('Circular dependency found');
+        }).toThrowError();
     });
 
     it('cleans up the circular marker when instantiation fails', function() {
@@ -287,6 +287,20 @@ describe('injector', function() {
         expect(function() {
             injector.get('a');
         }).toThrow('Failing instantiation');
+    });
+
+    //pg445
+    it('notifies the user about a circular dependency', function() {
+        var module = window.angular.module('myModule', []);
+        module.provider('a', {$get: ['b', function(b) {}] });
+        module.provider('b', {$get: ['c', function(c) {}] });
+        module.provider('c', {$get: ['a', function(a) {}] });
+
+        var injector = createInjector(['myModule']);
+
+        expect(function() {
+            injector.get('a');
+        }).toThrowError('Circular dependency found: a <- c <- b <- a');
     });
 
     //pg447 Provider Constructors
@@ -378,5 +392,5 @@ describe('injector', function() {
 
     });
 
-    
+
 });
