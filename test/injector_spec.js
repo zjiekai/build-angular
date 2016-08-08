@@ -394,7 +394,7 @@ describe('injector', function() {
         var injector = createInjector(['myModule']);
 
         expect(function() {
-            injector.invoke([function(aProvider) {}]);
+            injector.invoke(['aProvider', function(aProvider) {}]);
         }).toThrow();
     });
 

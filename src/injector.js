@@ -11,6 +11,11 @@ function createInjector(modulesToLoad, strictDi) {
     });
     
     var instanceCache = {};
+    var instanceInjector = createInternalInjector(instanceCache, function(name) {
+        var provider = providerInjector.get(name + 'Provider');
+        return instanceInjector.invoke(provider.$get, provider);
+    });
+
     var loadedModules = {};
     var path = [];
 
@@ -43,53 +48,6 @@ function createInjector(modulesToLoad, strictDi) {
         }
     }
 
-    function getService(name) {
-        if (instanceCache.hasOwnProperty(name)) {
-            if (instanceCache[name] === INSTANTIATING) {
-                throw new Error('Circular dependency found: ' +
-                    name + ' <- ' + path.join(' <- '));
-            }
-            return instanceCache[name];
-        } else if (providerCache.hasOwnProperty(name)) {
-            return providerCache[name];
-        } else if (providerCache.hasOwnProperty(name + 'Provider')) {
-            path.unshift(name);
-            instanceCache[name] = INSTANTIATING;
-            try {
-                var provider = providerCache[name + 'Provider'];
-                var instance = instanceCache[name] = invoke(provider.$get, provider);
-                return instance;
-            } finally {
-                path.shift();
-                if (instanceCache[name] === INSTANTIATING) {
-                    delete instanceCache[name];
-                }
-            }
-        }
-    }
-
-    function invoke(fn, self, locals) {
-        var args = _.map(annotate(fn), function(token) {
-            if (_.isString(token)) {
-                return locals && locals.hasOwnProperty(token) ?
-                    locals[token] :
-                    getService(token);
-            } else {
-                throw 'Incorrect injection token! Expected a string, got ' + token;
-            }
-        });
-        if (_.isArray(fn)) {
-            fn = _.last(fn);
-        }
-        return fn.apply(self, args);
-    }
-
-    function instantiate(Type) {
-        var instance = {};
-        invoke(Type, instance);
-        return instance;
-
-    }
 
     _.forEach(modulesToLoad, function loadModule(moduleName) {
         if (!loadedModules.hasOwnProperty(moduleName)) {
@@ -161,20 +119,7 @@ function createInjector(modulesToLoad, strictDi) {
         };
     }
 
-    return {
-        has: function(key) {
-            return instanceCache.hasOwnProperty(key) ||
-                providerCache.hasOwnProperty(key + 'Provider');
-        },
-
-        get: getService,
-
-        annotate: annotate,
-
-        invoke: invoke,
-
-        instantiate: instantiate
-    };
+    return instanceInjector;
 }
 
 module.exports = createInjector;
