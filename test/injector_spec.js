@@ -385,11 +385,30 @@ describe('injector', function() {
     });
 
     it('does not inject a provider to invoke', function() {
+        var module = window.angular.module('myModule', []);
 
+        module.provider('a', [function AProvider() {
+            this.$get = [function() { return 1; }];
+        }] );
+
+        var injector = createInjector(['myModule']);
+
+        expect(function() {
+            injector.invoke([function(aProvider) {}]);
+        }).toThrow();
     });
 
     it('does not give access to providers through get', function() {
+        var module = window.angular.module('myModule', []);
 
+        module.provider('a', [function AProvider() {
+            this.$get = [function() { return 1; }];
+        }]);
+
+        var injector = createInjector(['myModule']);
+        expect(function() {
+            injector.get('aProvider');
+        }).toThrow();
     });
 
 

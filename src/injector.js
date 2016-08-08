@@ -6,6 +6,10 @@ function createInjector(modulesToLoad, strictDi) {
     var INSTANTIATING = {};
 
     var providerCache = {};
+    var providerInjector = createInternalInjector(providerCache, function() {
+        throw 'Unknown provider: ' + path.join(' <- ');
+    });
+    
     var instanceCache = {};
     var loadedModules = {};
     var path = [];
@@ -16,11 +20,12 @@ function createInjector(modulesToLoad, strictDi) {
 
     var $provide = {
         constant: function(key, value) {
+            providerCache[key] = value;
             instanceCache[key] = value;
         },
         provider: function(key, provider) {
             if (_.isArray(provider)) {
-                provider = instantiate(provider);
+                provider = providerInjector.instantiate(provider);
             }
             providerCache[key + 'Provider'] = provider;
         }
@@ -98,6 +103,63 @@ function createInjector(modulesToLoad, strictDi) {
             });
         }
     });
+
+    function createInternalInjector(cache, factoryFn) {
+
+        function getService(name) {
+            if (cache.hasOwnProperty(name)) {
+                if (cache[name] === INSTANTIATING) {
+                    throw new Error('Circular dependency found: ' +
+                        name + ' <- ' + path.join(' <- '));
+                }
+                return cache[name];
+            } else {
+                path.unshift(name);
+                cache[name] = INSTANTIATING;
+                try {
+                    return (cache[name] = factoryFn(name));
+                } finally {
+                    path.shift();
+                    if (cache[name] === INSTANTIATING) {
+                        delete cache[name];
+                    }
+                }
+            }
+        }
+
+        function invoke(fn, self, locals) {
+            var args = _.map(annotate(fn), function(token) {
+                if (_.isString(token)) {
+                    return locals && locals.hasOwnProperty(token) ?
+                        locals[token] :
+                        getService(token);
+                } else {
+                    throw 'Incorrect injection token! Expected a string, got ' + token;
+                }
+            });
+            if (_.isArray(fn)) {
+                fn = _.last(fn);
+            }
+            return fn.apply(self, args);
+        }
+
+        function instantiate(Type, locals) {
+            var instance = {};
+            invoke(Type, instance);
+            return instance;
+        }
+
+        return {
+            has: function(name) {
+                return cache.hasOwnProperty(name) ||
+                        providerCache.hasOwnProperty(name + 'Provider');
+            },
+            get: getService,
+            annotate: annotate,
+            invoke: invoke,
+            instantiate: instantiate
+        };
+    }
 
     return {
         has: function(key) {
