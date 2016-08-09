@@ -24,7 +24,7 @@ function createInjector(modulesToLoad, strictDi) {
 
 
 
-    var $provide = {
+    providerCache.$provide = {
         constant: function(key, value) {
             providerCache[key] = value;
             instanceCache[key] = value;
@@ -58,7 +58,7 @@ function createInjector(modulesToLoad, strictDi) {
             _.forEach(module._invokeQueue, function (invokeArgs) {
                 var method = invokeArgs[0];
                 var args = invokeArgs[1];
-                $provide[method].apply($provide, args);
+                providerCache.$provide[method].apply(providerCache.$provide, args);
             });
         }
     });
