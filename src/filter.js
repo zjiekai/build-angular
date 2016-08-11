@@ -3,13 +3,14 @@
 var filters = {};
 
 function register(name, factory) {
-  var filter = factory();
-  filters[name] = filter;
-  return filter;
+    var filter = factory();
+    filters[name] = filter;
+    return filter;
 }
 
 function filter(name) {
-  return filters[name];
+    return filters[name];
 }
 
-module.exports = {register: register, filter: filter};
+//module.exports = {register: register, filter: filter};
+module.exports = $FilterProvider;
