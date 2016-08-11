@@ -16,4 +16,10 @@ describe('$q', function() {
         var d = $q.defer();
         expect(d).toBeDefined();
     });
+
+    //pg 529 Accessing The Promise of A Deferred
+    it('has a promise for each Deferred', function() {
+        var d = $q.defer();
+        expect(d.promise).toBeDefined();
+    });
 });
