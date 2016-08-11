@@ -578,4 +578,10 @@ describe('injector', function() {
 
         expect(injector.get('a')).toBe(injector.get('a'));
     });
+
+    //pg487 Values
+
+    //pg490 Services
+
+    //pg493 Decorators
 });
