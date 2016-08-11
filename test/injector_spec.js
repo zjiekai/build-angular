@@ -440,6 +440,27 @@ describe('injector', function() {
         expect(injector.get('b')).toBe(42);
     });
 
+    //pg463
+    it('allows injecting the provider injector to provider', function() {
+        var module = window.angular.module('myModule', []);
+
+        module.provider('a', [function AProvider() {
+            this.value = 42;
+            this.$get = [function() { return this.value; }];
+        }]);
+
+        module.provider('b', ['$injector', function BProvider($injector){
+            var aProvider = $injector.get('aProvider');
+            this.$get = [function() {
+                return aProvider.value;
+            }];
+        }]);
+
+        var injector = createInjector(['myModule']);
+
+        expect(injector.get('b')).toBe(42);
+    });
+
     //pg464 $provide
     it('allows injecting the provider injector to provider', function() {
         var module = window.angular.module('myModule', []);

@@ -9,6 +9,7 @@ function createInjector(modulesToLoad, strictDi) {
     var providerInjector = createInternalInjector(providerCache, function() {
         throw 'Unknown provider: ' + path.join(' <- ');
     });
+    providerCache.$injector = providerInjector;
     
     var instanceCache = {};
     var instanceInjector = createInternalInjector(instanceCache, function(name) {
@@ -65,7 +66,7 @@ function createInjector(modulesToLoad, strictDi) {
             var module = window.angular.module(moduleName);
             _.forEach(module.requires, loadModule);
             runInvokeQueue(module._invokeQueue);
-            runInvokeQueue(module._configBlock);
+            runInvokeQueue(module._configBlocks);
         }
     });
 
