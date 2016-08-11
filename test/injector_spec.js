@@ -529,4 +529,53 @@ describe('injector', function() {
 
         expect(injector.get('a')).toBe(42);
     });
+
+    //pg471
+    it('runs run blocks when the injector is created', function() {
+
+    });
+
+    it('injects run blocks with the instance injector', function() {
+
+    });
+
+    it('configures all modules before running any run blocks', function() {
+
+    });
+
+    /*
+     * Config blocks are executed during module loading and
+     * run blocks are executed after all modules loaded
+     */
+
+    //pg473 Function Modules
+
+    //pg476 Hash Key
+
+    //pg484 Factories
+
+    it('allows registering a factory', function() {
+
+    });
+
+    it('injects a factory function with instances', function() {
+        var module = window.angular.module('myModule', []);
+
+        module.factory('a', [function() {return 1; }]);
+        module.factory('b', ['a', function(a) { return a + 2; }]);
+
+        var injector = createInjector(['myModule']);
+
+        expect(injector.get('b')).toBe(3);
+    });
+
+    it('only calls a factory function once', function() {
+        var module = window.angular.module('myModule', []);
+
+        module.factory('a', [function() {return {}; }]);
+
+        var injector = createInjector(['myModule']);
+
+        expect(injector.get('a')).toBe(injector.get('a'));
+    });
 });
