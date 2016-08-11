@@ -13,4 +13,18 @@ function filter(name) {
 }
 
 //module.exports = {register: register, filter: filter};
+
+//pg 499
+function $FilterProvider() {
+    var filters = {};
+
+    this.register = function(name, factory) {
+
+    };
+
+    this.$get = function() {
+
+    };
+}
+
 module.exports = $FilterProvider;
