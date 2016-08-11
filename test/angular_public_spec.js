@@ -17,4 +17,11 @@ describe('angularPublic', function() {
 
         expect(createInjector(['ng'])).toBeDefined();
     });
+
+    //pg526
+    it('sets up $q', function() {
+        publishExternalAPI();
+        var injector = createInjector(['ng']);
+        expect(injector.has('$q')).toBe(true);
+    });
 });
