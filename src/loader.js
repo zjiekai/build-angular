@@ -10,16 +10,24 @@ function setupModuleLoader(window) {
 
     var createModule = function(name, requires, modules) {
         var invokeQueue = [];
+        var configBlocks = [];
+
+        var invokeLater = function(service, method, arrayMethod, queue) {
+            return function() {
+                queue = queue || invokeQueue;
+                queue[arrayMethod || 'push']([service, method, arguments]);
+                return moduleInstance;
+            };
+        };
+
         var moduleInstance = {
             name: name,
             requires: requires,
-            constant: function(key, value) {
-                invokeQueue.unshift(['constant', [key, value]]);
-            },
-            provider: function(key, provider) {
-                invokeQueue.push(['provider', [key, provider]]);
-            },
-            _invokeQueue: invokeQueue
+            constant: invokeLater('$provide', 'constant', 'unshift'),
+            provider: invokeLater('$provide', 'provider', 'push'),
+            config: invokeLater('$injector', 'invoke', 'push', configBlocks),
+            _invokeQueue: invokeQueue,
+            _configBlocks: configBlocks
         };
         modules[name] = moduleInstance;
         return moduleInstance;
