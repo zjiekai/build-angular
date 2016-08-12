@@ -2,7 +2,17 @@
 
 function $QProvider() {
 
-    this.$get = function() {
+    this.$get = ['$rootScope', function($rootScope) {
+
+        function processQueue(state) {
+            state.pending(state.value);
+        }
+
+        function scheduleProcessQueue(state) {
+            $rootScope.$evalAsync(function() {
+                
+            });
+        }
 
         function Promise() {
             this.$$state = {};
@@ -10,6 +20,7 @@ function $QProvider() {
 
         Promise.prototype.then = function(onFulfilled) {
             this.$$state.pending = onFulfilled;
+
         };
 
         function Deferred() {
@@ -28,7 +39,7 @@ function $QProvider() {
             defer: defer
         };
 
-    };
+    }];
 }
 
 module.exports = [$QProvider];
