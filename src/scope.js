@@ -40,6 +40,10 @@ function $RootScopeProvider() {
             });
         };
 
+        Scope.prototype.$eval = function(expr, locals) {
+            return expr(this, locals);
+        };
+
         var $rootScope = new Scope();
         return $rootScope;
     };

@@ -147,7 +147,35 @@ describe('Scope', function () {
 
     });
 
-    describe('$eval', function() {});
+    describe('$eval', function() {
+        //pg62
+        var scope;
+        beforeEach(function () {
+            publishExternalAPI();
+            scope = createInjector(['ng']).get('$rootScope');
+        });
+
+        it('executes $evaled function and returns result', function() {
+            scope.aValue = 42;
+
+            var result = scope.$eval(function(scope) {
+                return scope.aValue;
+            });
+
+            expect(result).toBe(42);
+        });
+
+        it('passes the second $eval argument straight through', function() {
+            scope.aValue = 42;
+
+            var result = scope.$eval(function(scope, arg) {
+                return scope.aValue + arg;
+            }, 2);
+
+            expect(result).toBe(44);
+        });
+
+    });
 
     describe('$apply', function() {});
 
