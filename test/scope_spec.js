@@ -177,7 +177,37 @@ describe('Scope', function () {
 
     });
 
-    describe('$apply', function() {});
+    describe('$apply', function() {
+        //pg63
+        var scope;
+        beforeEach(function () {
+            publishExternalAPI();
+            scope = createInjector(['ng']).get('$rootScope');
+        });
+
+        it('executes the given function and starts the digest', function() {
+            scope.aValue = 'someValue';
+            scope.counter = 0;
+
+            scope.$watch(
+                function(scope) {
+                    return scope.aValue;
+                },
+                function(newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+            scope.$apply(function(scope) {
+                scope.aValue = 'someOtherValue';
+            });
+            expect(scope.counter).toBe(2);
+        });
+
+    });
 
     describe('$evalAsync', function() {});
 
