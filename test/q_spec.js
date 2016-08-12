@@ -5,11 +5,13 @@ var createInjector = require('../src/injector');
 
 describe('$q', function() {
 
-    var $q;
+    var $q, $rootScope;
 
     beforeEach(function() {
         publishExternalAPI();
-        $q = createInjector(['ng']).get('$q');
+        var injector = createInjector(['ng']);
+        $q = injector.get('$q');
+        $rootScope = injector.get('$rootScope');
     });
 
     it('can create a deferred', function() {
@@ -61,5 +63,18 @@ describe('$q', function() {
         d.resolve(42);
 
         expect(promiseSpy).not.toHaveBeenCalled();
+    });
+
+    //pg532
+    it('resolves promise at next digest', function() {
+        var d = $q.defer();
+
+        var promiseSpy = jasmine.createSpy();
+        d.promise.then(promiseSpy);
+
+        d.resolve(42);
+        $rootScope.$apply();
+
+        expect(promiseSpy).toHaveBeenCalledWith(42);
     });
 });
