@@ -5,6 +5,7 @@ function publishExternalAPI() {
 
     var ngModule = window.angular.module('ng', []);
 
+    ngModule.provider('$rootScope', require('./scope'));
     ngModule.provider('$q', require('./q'));
 }
 
