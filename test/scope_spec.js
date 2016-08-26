@@ -113,7 +113,8 @@ describe('Scope', function () {
             expect(watchFn).toHaveBeenCalled();
         });
 
-        xit('triggers chained watchers in the same digest', function () {
+        it('triggers chained watchers in the same digest', function () {
+            //41
             scope.name = 'Jane';
 
             scope.$watch(
@@ -133,6 +134,7 @@ describe('Scope', function () {
                 },
                 function (newValue, oldValue, scope) {
                     if (newValue) {
+                        scope.nameUpper = newValue.toUpperCase();
                     }
                 }
             );
