@@ -10,6 +10,8 @@ function $RootScopeProvider() {
         function Scope() {
             this.$$watchers = [];
 
+            this.$$asyncQueue = [];
+
         }
 
         function initWatchVal() {
@@ -28,6 +30,10 @@ function $RootScopeProvider() {
         Scope.prototype.$digest = function() {
             var dirty;
             do {
+                while (this.$$asyncQueue.length) {
+                    var asyncTask = this.$$asyncQueue.shift();
+                    asyncTask.scope.$eval(asyncTask.expression);
+                }
                 dirty = this.$$digestOnce();
             } while (dirty);
         };
@@ -59,6 +65,13 @@ function $RootScopeProvider() {
             } finally {
                 this.$digest();
             }
+        };
+
+        Scope.prototype.$evalAsync = function(expr) {
+            this.$$asyncQueue.push({
+                scope: this,
+                expression: expr
+            });
         };
 
         var $rootScope = new Scope();
